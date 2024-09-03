@@ -14,11 +14,11 @@ timezone = pytz.timezone("America/Lima")
 #db_name = 'framework'
 
 #Conexion openshift
-db_username = 'airflow'
-db_password = 'airflow'
-db_host = 'postgres'
+db_username = 'admin'
+db_password = 'admin'
+db_host = 'postgres-db-service'
 db_port = '5432'
-db_name = 'framework_desa'
+db_name = 'framework'
 
 
 def getConnection():
@@ -41,7 +41,7 @@ def get_dag(dag_name):
     try:
         conn = getConnection()
         cur = conn.cursor()
-        query = "SELECT dag_id FROM AF_DAG WHERE dag_name = %s;"
+        query = "SELECT dag_id FROM AF_DAG_DESA WHERE dag_name = %s;"
         cur.execute(query, (dag_name,))
         result = cur.fetchone()
         dag_id = result[0] if result else None
@@ -65,7 +65,7 @@ def add_dag(row):
         cur = conn.cursor()
 
         dag_insert_query = """
-            INSERT INTO AF_DAG (
+            INSERT INTO AF_DAG_DESA (
                 dag_name, description, frequency, freq_interval, start_date,
                 hour_start, hour_end, end_date, owner, tags, catchup, create_date
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -112,7 +112,7 @@ def delete_dag(dag_id):
     try:
         conn = getConnection()
         cur = conn.cursor()
-        query_get_task = "DELETE FROM AF_DAG WHERE dag_id = %s;"
+        query_get_task = "DELETE FROM AF_DAG_DESA WHERE dag_id = %s;"
         cur.execute(query_get_task, (dag_id,))
         conn.commit()
         cur.close()
@@ -136,7 +136,7 @@ def delete_task_by_dag_id(dag_id):
     try:
         conn = getConnection()
         cur = conn.cursor()
-        query_get_task = "DELETE FROM AF_TASK WHERE dag_id = %s;"
+        query_get_task = "DELETE FROM AF_TASK_DESA WHERE dag_id = %s;"
         cur.execute(query_get_task, (dag_id,))
         conn.commit()
         cur.close()
@@ -163,7 +163,7 @@ def add_task(df_tasks_excel):
         cur = conn.cursor()
 
         task_insert_query = """
-            INSERT INTO AF_TASK (
+            INSERT INTO AF_TASK_DESA (
                 dag_id, task_name, layout, schedule_type, task_description, retries, retry_delay, depends_on_past, queue_task,
                 task_type, script_task, connection_id, pool_name, priority_weight, predecessor, create_date
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING task_id
