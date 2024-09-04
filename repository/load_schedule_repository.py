@@ -20,7 +20,7 @@ class LoadScheduleRepository:
         try:
             conn = PostgresDatabase.get_connection()
             cur = conn.cursor()
-            query = "SELECT dag_id FROM AF_DAG_DESA WHERE dag_name = %s;"
+            query = "SELECT dag_id FROM AF_DAG WHERE dag_name = %s;"
             cur.execute(query, (dag_name,))
             result = cur.fetchone()
             dag_id = result[0] if result else None
@@ -48,7 +48,7 @@ class LoadScheduleRepository:
             cur = conn.cursor()
 
             dag_insert_query = """
-                INSERT INTO AF_DAG_DESA (
+                INSERT INTO AF_DAG (
                     dag_name, description, frequency, freq_interval, start_date,
                     hour_start, hour_end, end_date, owner, tags, catchup, create_date
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -98,7 +98,7 @@ class LoadScheduleRepository:
         try:
             conn = PostgresDatabase.get_connection()
             cur = conn.cursor()
-            query_get_task = "DELETE FROM AF_DAG_DESA WHERE dag_id = %s;"
+            query_get_task = "DELETE FROM AF_DAG WHERE dag_id = %s;"
             cur.execute(query_get_task, (dag_id,))
             conn.commit()
             cur.close()
@@ -126,7 +126,7 @@ class LoadScheduleRepository:
         try:
             conn = PostgresDatabase.get_connection()
             cur = conn.cursor()
-            query_get_task = "DELETE FROM AF_TASK_DESA WHERE dag_id = %s;"
+            query_get_task = "DELETE FROM AF_TASK WHERE dag_id = %s;"
             cur.execute(query_get_task, (dag_id,))
             conn.commit()
             cur.close()
@@ -157,10 +157,12 @@ class LoadScheduleRepository:
             cur = conn.cursor()
 
             task_insert_query = """
-                INSERT INTO AF_TASK_DESA (
-                    dag_id, task_name, layout, schedule_type, task_description, retries, retry_delay, depends_on_past, queue_task,
-                    task_type, script_task, connection_id, pool_name, priority_weight, predecessor, create_date
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING task_id
+                INSERT INTO AF_TASK (
+                    dag_id, task_name, layout, schedule_type, task_description, retries, 
+                    retry_delay, depends_on_past, queue_task, task_type, script_task, 
+                    connection_id, pool_name, priority_weight, predecessor, create_date
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                RETURNING task_id
             """
 
             for index, row in df_tasks_excel.iterrows():
@@ -213,9 +215,12 @@ class LoadScheduleRepository:
             conn = PostgresDatabase.get_connection()
             cur = conn.cursor()
             task_insert_query = """
-                INSERT INTO af_dag_hist_desa (dag_id, dag_name, description, frequency, start_date, hour_start, hour_end,freq_interval, end_date, owner,tags,catchup, create_date)
-                SELECT dag_id, dag_name, description, frequency, start_date, hour_start, hour_end,freq_interval, end_date, owner,tags,catchup, create_date
-                FROM af_dag_desa WHERE dag_id = %s;
+                INSERT INTO af_dag_hist (
+                    dag_id, dag_name, description, frequency, start_date, hour_start, 
+                    hour_end, freq_interval, end_date, owner,tags,catchup, create_date)
+                SELECT  dag_id, dag_name, description, frequency, start_date, hour_start, 
+                    hour_end,freq_interval, end_date, owner,tags,catchup, create_date
+                FROM af_dag WHERE dag_id = %s;
             """
             cur.execute(task_insert_query, (dag_id,))
             conn.commit()
@@ -245,9 +250,15 @@ class LoadScheduleRepository:
             conn = PostgresDatabase.get_connection()
             cur = conn.cursor()
             task_insert_query = """
-                INSERT INTO af_task_hist_desa (task_id, dag_id, task_name, task_type, task_description, retries, retry_delay,depends_on_past, queue_task, script_task,layout,schedule_type, predecessor, connection_id,pool_name,priority_weight, create_date)
-                SELECT task_id, dag_id, task_name, task_type, task_description, retries, retry_delay,depends_on_past, queue_task, script_task,layout,schedule_type, predecessor, connection_id,pool_name,priority_weight, create_date
-                FROM af_task_desa WHERE dag_id = %s;
+                INSERT INTO af_task_hist (
+                    task_id, dag_id, task_name, task_type, task_description, retries, 
+                    retry_delay, depends_on_past, queue_task, script_task,layout,
+                    schedule_type, predecessor, connection_id,pool_name,priority_weight,
+                    create_date)
+                SELECT task_id, dag_id, task_name, task_type, task_description, retries,
+                    retry_delay,depends_on_past, queue_task, script_task,layout,schedule_type,
+                    predecessor, connection_id,pool_name,priority_weight, create_date
+                FROM af_task WHERE dag_id = %s;
             """
             cur.execute(task_insert_query, (dag_id,))
             conn.commit()
