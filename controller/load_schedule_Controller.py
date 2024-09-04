@@ -12,17 +12,22 @@ def upload_schedule_airflow():
     try:
 
         if not request.data:
-            raise AppException(f"Error: No file Data", HTTPStatus.BAD_REQUEST)
+            raise AppException(f"No file Data", HTTPStatus.BAD_REQUEST)
         
         file = io.BytesIO(request.data)
 
         response = LoadScheduleService.upload_schedule_airflow(file)
 
-        return jsonify({f'{response}':'Registered successfully'}), HTTPStatus.OK
+        response_data = {
+            "message": f"Registered successfully: {response}",
+            "status_code": HTTPStatus.CREATED
+        }
+
+        return jsonify(response_data), HTTPStatus.CREATED
     except AppException as e:       
         raise AppException(f"{str(e)}", e.status_code)
     except Exception as e:       
-        raise AppException(f"Error en el controlador", HTTPStatus.INTERNAL_SERVER_ERROR)    
+        raise AppException(f"An error occurred in the controller", HTTPStatus.INTERNAL_SERVER_ERROR)    
 
 
 

@@ -12,7 +12,7 @@ class LoadScheduleService:
             try:
                 workbook = load_workbook(file)
             except Exception as e:
-                  raise AppException(f"Uploaded file is not a valid Excel file", HTTPStatus.INTERNAL_SERVER_ERROR)   
+                  raise AppException(f"Uploaded file is not a valid Excel file", HTTPStatus.BAD_REQUEST)   
             
             return LoadScheduleAirflow.load_schedule_airflow(file)
         
@@ -20,7 +20,7 @@ class LoadScheduleService:
             raise AppException(f"{str(e)}", e.status_code)
         
         except Exception as e:
-            print("Ocurio un error a nivel de servicio")
-            raise AppException(f"Ocurrio un al cargar la data a postgres", HTTPStatus.INTERNAL_SERVER_ERROR)
+            print("An error occurred in the service")
+            raise AppException(f"An error occurred in the service", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 

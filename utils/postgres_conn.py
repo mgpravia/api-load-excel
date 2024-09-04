@@ -1,6 +1,7 @@
 import psycopg2
 import config.configuration as config
-
+from handler.error_handler import AppException
+from http import HTTPStatus
 
 class PostgresDatabase:
 
@@ -17,4 +18,5 @@ class PostgresDatabase:
             return conn
 
         except Exception as e:
-            print(f"Ocurrio um error al establecer conexion con postgres: {str(e)}")    
+            print(f"Ocurrio um error al establecer conexion con postgres: {str(e)}") 
+            raise AppException(f"Error establishing connection to the database", HTTPStatus.INTERNAL_SERVER_ERROR)

@@ -14,6 +14,11 @@ def register_error_handlers(app):
 
     @app.errorhandler(AppException)
     def handle_app_exception(error):
-        response = jsonify(f"error: {error.message}")
+        error_data = {
+            "Error": error.message,
+            "status_code": error.status_code
+        }
+
+        response = jsonify(error_data)
         response.status_code = error.status_code
         return response

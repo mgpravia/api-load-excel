@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import datetime
 import config.configuration as config
 from utils.postgres_conn import PostgresDatabase
-
+from handler.error_handler import AppException
+from http import HTTPStatus
 
 timezone = pytz.timezone(config.TIMEZONE)
 
@@ -12,7 +13,7 @@ class LoadScheduleRepository:
     
     @staticmethod
     def get_dag(dag_name):
-        print(f"Consultando si el dag {dag_name} existe en base de datos")
+
         conn = None
         cur = None
 
@@ -26,12 +27,16 @@ class LoadScheduleRepository:
             cur.close()
             conn.close()
             return dag_id
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)        
         except Exception as e:
             if cur is not None:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error al Consultar Dag: {str(e)}")     
+            print(f"Error getting DAG: {str(e)}") 
+            raise AppException(f"Error getting DAG", HTTPStatus.INTERNAL_SERVER_ERROR)                
+
 
     @staticmethod
     def add_dag(row):
@@ -68,10 +73,12 @@ class LoadScheduleRepository:
             conn.commit()
             cur.close()
             conn.close()
-            print(f"DAG Registrado con dag_id: {dag_id}")
+            print(f"Dag registered with id: {dag_id}")
 
             return dag_id
-
+        
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -79,7 +86,8 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error al registrar el Dag: {str(e)}")
+            print(f"Error registering DAG: {str(e)}")
+            raise AppException(f"Error registering DAG", HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @staticmethod
     def delete_dag(dag_id):
@@ -95,7 +103,10 @@ class LoadScheduleRepository:
             conn.commit()
             cur.close()
             conn.close()
-            print(f"DAG Eliminado con dag_id: {dag_id}")
+            print(f"Dag deleted with id: {dag_id}")
+
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)            
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -103,7 +114,8 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error al Eliminar el DAG: {str(e)}") 
+            print(f"Error deleting DAG: {str(e)}") 
+            raise AppException(f"Error deleting DAG", HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @staticmethod
     def delete_task_by_dag_id(dag_id):
@@ -119,7 +131,10 @@ class LoadScheduleRepository:
             conn.commit()
             cur.close()
             conn.close()
-            print(f"TASKs Eliminados con dag_id: {dag_id}")
+            print(f"Task deleted with dag id: {dag_id}")
+
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)             
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -127,7 +142,8 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error al Eliminar los TASK con el dag id: {str(e)}") 
+            print(f"Error Deleting Tasks with DAG ID: {str(e)}") 
+            raise AppException(f"Error Deleting Tasks with DAG ID", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
     @staticmethod
@@ -169,10 +185,13 @@ class LoadScheduleRepository:
                     )
                 cur.execute(task_insert_query, task_values)
                 task_id = cur.fetchone()[0]
-                print(f"TASK {row['task_name']} Registrado con task_id: {task_id}")
+                print(f"TASK {row['task_name']} registered with id: {task_id}")
             conn.commit()
             cur.close()
-            conn.close()    
+            conn.close() 
+
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)               
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -180,7 +199,8 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error al Registrar el Dag: {str(e)}")
+            print(f"Error registering task: {str(e)}")
+            raise AppException(f"Error registering task", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
     @staticmethod
@@ -201,7 +221,10 @@ class LoadScheduleRepository:
             conn.commit()
             cur.close()
             conn.close()
-            print(f"Se registro el DAG en la tabla historica AF_DAG_HIST")
+            print(f"The dag was correctly recorded in the historical table")
+
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)              
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -209,7 +232,8 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error registrar el dag en la tabla AF_DAG_HIST: {str(e)}") 
+            print(f"Error registering the dag in the history table: {str(e)}")
+            raise AppException(f"Error registering the dag in the history table", HTTPStatus.INTERNAL_SERVER_ERROR) 
 
     @staticmethod
     def add_task_hist(dag_id):
@@ -229,7 +253,10 @@ class LoadScheduleRepository:
             conn.commit()
             cur.close()
             conn.close()
-            print(f"Se registro correctamente los task en la tabla historica: AF_TASK_HIST")
+            print(f"tasks were correctly recorded in the historical table.")
+
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)            
         except Exception as e:
             if conn is not None:
                 conn.rollback()
@@ -237,4 +264,5 @@ class LoadScheduleRepository:
                 cur.close()
             if conn is not None:
                 conn.close()        
-            print(f"Error registrar los task en la tabla historica AF_TASK_HIST: {str(e)}") 
+            print(f"Error recording tasks in the history table.: {str(e)}") 
+            raise AppException(f"Error recording tasks in the history table.", HTTPStatus.INTERNAL_SERVER_ERROR)

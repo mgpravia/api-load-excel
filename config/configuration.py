@@ -4,8 +4,6 @@ import os
 current_directory = os.path.dirname(__file__)
 config_file_path = os.path.join(current_directory, 'config.yaml')
 
-print(f"Archivo yaml: {config_file_path}")
-
 with open(config_file_path, 'r') as file:
     config = yaml.safe_load(file)
 

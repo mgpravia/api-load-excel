@@ -1,6 +1,7 @@
 import pandas as pd
 from repository.load_schedule_repository import LoadScheduleRepository
-
+from handler.error_handler import AppException
+from http import HTTPStatus
 
 class LoadScheduleAirflow:
 
@@ -25,15 +26,12 @@ class LoadScheduleAirflow:
                 usecols='B:N',
                 engine='openpyxl'
             )
-            # PREPARANDO LA DATA DAG
 
             df_dag_excel.columns = [
                 'dag_name', 'description', 'frequency', 'freq_interval', 'start_date', 'end_date', 'hour_start',
                 'hour_end', 'owner', 'tags', 'catchup'
             ]
-            #df_dag_excel['freq_interval'] = df_dag_excel['freq_interval'].astype(str)
 
-            # PREPARANDO DATA TASK
 
             df_tasks_excel.columns = [
                 'layout','schedule_type','task_description',  'predecessor', 'retries', 'retry_delay', 'depends_on_past','queue_task',
@@ -44,14 +42,11 @@ class LoadScheduleAirflow:
 
 
             print("Data Dag")
-            #print(df_dag_excel.iloc[0])
             print(df_dag_excel)
 
-            #print("================================================")
             print("Data Task")
             print(df_tasks_excel)
 
-            print('==============REGISTRANDO O ACTUALIZANDO  DAG===================')
             dag_row = df_dag_excel.iloc[0]
             dag_name  = dag_row['dag_name']
             dag_id = LoadScheduleRepository.get_dag(dag_name)
@@ -60,23 +55,25 @@ class LoadScheduleAirflow:
 
 
             if dag_id is None:
-                print(f"Registrando un nuevo DAG")
+                print(f"Registering Dag")
                 dag_id = LoadScheduleRepository.add_dag(dag_row)
-                print(f"Dag Registrado con id: {dag_id}")
+
+                print(f"Registering tasks for the dag with id: {dag_id}")
                 df_tasks_excel['dag_id'] = dag_id
 
                 LoadScheduleRepository.add_task(df_tasks_excel)
 
             else:
-                print(f"Actualizando DAG")
-
-                #Agrgando Dag y Task ha historica
+                
+                print(f"Recording Dag in historical table")
                 LoadScheduleRepository.add_dag_hist(dag_id)
                 LoadScheduleRepository.add_task_hist(dag_id)
 
+                print("Removing Dag and Task")
                 LoadScheduleRepository.delete_dag(dag_id)
                 LoadScheduleRepository.delete_task_by_dag_id(dag_id)
 
+                print("Registering Dag and Task")
                 dag_id = LoadScheduleRepository.add_dag(dag_row)
 
                 df_tasks_excel['dag_id'] = dag_id
@@ -85,9 +82,11 @@ class LoadScheduleAirflow:
 
             return "OK"
         
+        except AppException as e:       
+            raise AppException(f"{str(e)}", e.status_code)        
         except Exception as e:
-            print(f"Ocurio un error al cargar los dag y task: {str(e)}")
-            raise
+            print(f"An error occurred in the Dag and Task registration process: {str(e)}")
+            raise AppException(f"An error occurred in the Dag and Task registration process", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 
