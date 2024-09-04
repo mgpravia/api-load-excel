@@ -195,7 +195,7 @@ class LoadScheduleRepository:
             task_insert_query = """
                 INSERT INTO af_dag_hist_desa (dag_id, dag_name, description, frequency, start_date, hour_start, hour_end,freq_interval, end_date, owner,tags,catchup, create_date)
                 SELECT dag_id, dag_name, description, frequency, start_date, hour_start, hour_end,freq_interval, end_date, owner,tags,catchup, create_date
-                FROM af_dag WHERE dag_id = %s;
+                FROM af_dag_desa WHERE dag_id = %s;
             """
             cur.execute(task_insert_query, (dag_id,))
             conn.commit()
@@ -223,7 +223,7 @@ class LoadScheduleRepository:
             task_insert_query = """
                 INSERT INTO af_task_hist_desa (task_id, dag_id, task_name, task_type, task_description, retries, retry_delay,depends_on_past, queue_task, script_task,layout,schedule_type, predecessor, connection_id,pool_name,priority_weight, create_date)
                 SELECT task_id, dag_id, task_name, task_type, task_description, retries, retry_delay,depends_on_past, queue_task, script_task,layout,schedule_type, predecessor, connection_id,pool_name,priority_weight, create_date
-                FROM af_task WHERE dag_id = %s;
+                FROM af_task_desa WHERE dag_id = %s;
             """
             cur.execute(task_insert_query, (dag_id,))
             conn.commit()
