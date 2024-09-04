@@ -1,0 +1,11 @@
+
+postgres:
+  host: 'postgres-db-service'
+  database: 'framework'
+  user: 'admin'
+  password: 'admin'
+  port: '5432'
+
+
+variables:
+  timeZone: 'America/Lima'
