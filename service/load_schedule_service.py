@@ -2,6 +2,7 @@ from qsynthetix.load_schedule_airflow import LoadScheduleAirflow
 from handler.error_handler import AppException
 from http import HTTPStatus
 from openpyxl import load_workbook 
+from utils.format_log import message_format
 
 class LoadScheduleService:
 
@@ -20,7 +21,7 @@ class LoadScheduleService:
             raise AppException(f"{str(e)}", e.status_code)
         
         except Exception as e:
-            print("An error occurred in the service")
+            message_format(f"An error occurred in the service: {str(e)}")
             raise AppException(f"An error occurred in the service", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 

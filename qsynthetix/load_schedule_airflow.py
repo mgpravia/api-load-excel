@@ -2,6 +2,7 @@ import pandas as pd
 from repository.load_schedule_repository import LoadScheduleRepository
 from handler.error_handler import AppException
 from http import HTTPStatus
+from utils.format_log import message_format
 
 class LoadScheduleAirflow:
 
@@ -39,41 +40,30 @@ class LoadScheduleAirflow:
             ]
             df_tasks_excel['task_name'] = df_tasks_excel['schedule_type'] + '_' + df_tasks_excel['layout']
 
-
-
-            print("Data Dag")
-            print(df_dag_excel)
-
-            print("Data Task")
-            print(df_tasks_excel)
-
             dag_row = df_dag_excel.iloc[0]
             dag_name  = dag_row['dag_name']
             dag_id = LoadScheduleRepository.get_dag(dag_name)
 
-
-
-
             if dag_id is None:
-                print(f"Registering Dag")
+                message_format("Registering Dag")
                 dag_id = LoadScheduleRepository.add_dag(dag_row)
 
-                print(f"Registering tasks for the dag with id: {dag_id}")
+                message_format(f"Registering tasks for the dag with id: {dag_id}")
                 df_tasks_excel['dag_id'] = dag_id
 
                 LoadScheduleRepository.add_task(df_tasks_excel)
 
             else:
                 
-                print(f"Recording Dag in historical table")
+                message_format(f"Recording Dag in historical table")
                 LoadScheduleRepository.add_dag_hist(dag_id)
                 LoadScheduleRepository.add_task_hist(dag_id)
 
-                print("Removing Dag and Task")
+                message_format("Removing Dag and Task")
                 LoadScheduleRepository.delete_dag(dag_id)
                 LoadScheduleRepository.delete_task_by_dag_id(dag_id)
 
-                print("Registering Dag and Task")
+                message_format("Registering Dag and Task")
                 dag_id = LoadScheduleRepository.add_dag(dag_row)
 
                 df_tasks_excel['dag_id'] = dag_id
@@ -85,7 +75,7 @@ class LoadScheduleAirflow:
         except AppException as e:       
             raise AppException(f"{str(e)}", e.status_code)        
         except Exception as e:
-            print(f"An error occurred in the Dag and Task registration process: {str(e)}")
+            message_format(f"An error occurred in the Dag and Task registration process: {str(e)}")
             raise AppException(f"An error occurred in the Dag and Task registration process", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 

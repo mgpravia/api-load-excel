@@ -1,11 +1,19 @@
 
 postgres:
-  host: 'postgres-db-service'
-  database: 'framework'
-  user: 'admin'
-  password: 'admin'
-  port: '5432'
+  prod:
+    host: 'postgres-db-service'
+    database: 'framework'
+    user: 'admin'
+    password: 'admin'
+    port: '5432'
+    active: True
+  desa:
+    host: 'localhost'
+    database: 'framework'
+    user: 'airflow'
+    password: 'airflow'
+    port: '5432'
+    active: False
 
-
-variables:
+constantes:
   timeZone: 'America/Lima'
